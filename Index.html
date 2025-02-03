@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>最安値ルート</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>2地点の最安値のルートを検索します。</h1>
+    </header>
+    <main>
+        <section>
+            <button class="btn add-waypoint" type="button" onclick="addRelayPoint()">経由地</button>
+        </section>
+        <form name="locationData">
+            <div class="input-group">
+                <label for="startPoint">出発地点:</label>
+                <input id="startPoint" name="startPoint" type="text">
+            </div>
+            <div id="relayPoints"></div>
+            <div class="input-group">
+                <label for="endPoint">到着地点:</label>
+                <input id="endPoint" name="endPoint" type="text">
+            </div>
+        </form>
+        <section>
+            <button class="btn calculate" type="button" onclick="computeCost()">計算</button>
+        </section>
+        <output></output>
+    </main>
+    <script>
+        function chkjp(name) {
+            const regex = /[\p{sc=Hiragana}\p{sc=Han}]/u;
+            return regex.test(name);
+        }
+
+        function getLocations(elements) {
+            return Array.from(elements).map(el => el.value.trim()).filter(val => val !== "");
+        }
+
+        function displayJourney(locations) {
+            let journeyDetails = "";
+            for (let i = 0; i < locations.length; i++) {
+                journeyDetails += `<div class="location">${locations[i]}</div>`;
+                if (i < locations.length - 1) {
+                    const travelMode = chkjp(locations[i]) === chkjp
+                    (locations[i + 1]) ? "徒歩" : "水泳";
+                    journeyDetails += `<div class="transport"><span class="separator">｜</span>(${travelMode})</div>`;
+                }
+            }
+            return journeyDetails;
+        }
+
+        function computeCost() {
+            const formElements = document.forms.locationData.elements;
+            const locations = getLocations(formElements);
+
+            if (locations.length < 2) {
+                alert("不正な入力です。");
+                return;
+            }
+
+            const outputElement = document.querySelector("output");
+            const calcButton = document.querySelector(".calculate");
+            outputElement.innerHTML = "<div class='journey'>検索中...</div>";
+            calcButton.disabled = true;
+
+            const delay = 1000 + Math.random() * 3000;
+            setTimeout(() => {
+                outputElement.innerHTML = `<div class='journey'>${displayJourney(locations)}</div><p>必要金額0円</p>`;
+                calcButton.disabled = false;
+                calcButton.textContent = "再計算";
+            }, delay);
+        }
+
+        function addRelayPoint() {
+            const relayDiv = document.createElement("div");
+            relayDiv.className = "input-group";
+
+            const relayLabel = document.createElement("label");
+            relayLabel.textContent = "経由ポイント: ";
+
+            const relayInput = document.createElement("input");
+            relayInput.type = "text";
+
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.className = "btn remove-waypoint";
+            removeBtn.textContent = "削除";
+            removeBtn.onclick = () => relayDiv.remove();
+
+            relayLabel.appendChild(relayInput);
+            relayDiv.appendChild(relayLabel);
+            relayDiv.appendChild(removeBtn);
+
+            document.querySelector("#relayPoints").appendChild(relayDiv);
+        }
+    </script>
+</body>
+</html>
